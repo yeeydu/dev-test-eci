@@ -6,50 +6,44 @@ use Illuminate\Http\Request;
 use App\Models\Prices;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\DB;
 
 
 class ProductController extends Controller
 {
-    public function index()
-    {
-        return view('index');
-    }
-
     /**
      * Get product price function
      */
     public function getProductPrice(Request $request)
     {
+
         $sku = $request->input('sku');
         $account_id = $request->input('account_id');
-        
-        $prices = Prices::all();
-        $dbPrices = Prices::where('product_id', $sku)
-            ->where(function ($query) use ($account_id) {
-                $query->where('account_id', $account_id)
-                    ->orWhereNull('account_id');
-            })
-            ->orderBy('value', 'asc')
-            ->pluck('value')
-            ->first();
-            
-            
-    
-        $name = "yeeyson";
 
-        // information stored in JSON file
-        $jsonFile = file_get_contents(storage_path('live_prices.json'));
-        //$jsonFile = File::get('live_prices.json');
+        // from JSON file
+        $jsonFile = Storage::get('live_prices.json');
         $products = json_decode($jsonFile, true);
 
-        // Search 
-        $product = collect($products)->firstWhere('sku', $sku);
+        $filteredJsonData = collect($products)
+            ->where('sku', $sku)
+            ->where('account', $account_id)
+            ->first();
 
-        var_dump($prices);
-        dd($prices);
-        dump($prices);
+            
+        // from database
+        $dbPrices = DB::table('prices')
+            ->where('product_id', '=', $sku)
+            ->orWhere(function ($query) use ($request) {
+                $account_id = $request->input('account_id');
+                $query->where('account_id', $account_id);
+            })->orderBy('value', 'asc')
+            ->first();
 
-        
-        return view('index', ['name' => $name,  'dbPrices' => $dbPrices, 'prices' => $prices, 'product' => $product]);
+        // Determine the final price based on the logic
+        $finalPrice = $filteredJsonData ? $filteredJsonData  : 
+        ($dbPrices ? $dbPrices: null);
+
+        return view('product', ['finalPrice' => $finalPrice]);
+
     }
 }

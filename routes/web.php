@@ -22,5 +22,5 @@ Route::get('/', function () {
 Route::get('/import', [ImportCsvController::class, 'import'])->name('import');
 Route::post('/import', [ImportCsvController::class, 'importcsv'])->name('importcsv');
 
-Route::get('/', [ProductController::class, 'index'])->name('index');
-Route::post('/', [ProductController::class, 'getProductPrice'])->name('get-product-price');
+Route::get('/getProductPrice', [ProductController::class, 'getProductPrice'])->name('get-product-price');
+Route::post('/getProductPrice', [ProductController::class, 'getProductPrice'])->name('get-product-price');
