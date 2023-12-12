@@ -3,6 +3,9 @@
 
 <div class="container p-5">
     <h1 class="text-center m-2 p-2">Get Products</h1>
+    <a href="{{ url('/') }}" >
+        <button class="btn btn-primary " id="btn-add" >Back</button>
+    </a>
     <div class="row mt-4 mb-4">
             <h5>Get product price</h5>
             <form method="GET" action="{{ route('get-product-price') }}">
